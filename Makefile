@@ -18,10 +18,12 @@
 #   <info@isc.org>
 #   https://www.isc.org/
 
-QUAGGA_DIR = /home/avneesh/ws/quagga-fpm
+# Location of quagga code. This is required because we depend on the
+# header file that defines the FPM interface: fpm/fpm.h.
+QUAGGA_DIR = ../quagga
 
-fpm_stub : fpm_stub.c
-	gcc  -o fpm_stub -g -I$(QUAGGA_DIR) fpm_stub.c
+fpm-stub : fpm_stub.c
+	gcc  -o $@ -g -I$(QUAGGA_DIR) $<
 
 clean :
-	@-rm -f fpm_stub
+	@-rm -f fpm-stub
