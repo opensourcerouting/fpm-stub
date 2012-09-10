@@ -147,7 +147,7 @@ fpm_msg_hdr_t *
 read_fpm_msg (char *buf, size_t buf_len)
 {
   char *cur, *end;
-  int need_len, bytes_read;
+  int need_len, bytes_read, have_len;
   fpm_msg_hdr_t *hdr;
   int reading_full_msg;
 
@@ -158,11 +158,13 @@ read_fpm_msg (char *buf, size_t buf_len)
   while (1) {
     reading_full_msg = 0;
 
-    if ((cur - buf) < FPM_MSG_HDR_LEN) {
-      need_len = FPM_MSG_HDR_LEN;
+    have_len = cur - buf;
+
+    if (have_len < FPM_MSG_HDR_LEN) {
+      need_len = FPM_MSG_HDR_LEN - have_len;
     } else {
-      need_len = ntohs(hdr->msg_len) - FPM_MSG_HDR_LEN;
-      assert(need_len < (end - cur));
+      need_len = fpm_msg_len(hdr) - have_len;
+      assert(need_len >= 0 && need_len < (end - cur));
 
       if (!need_len)
 	return hdr;
@@ -190,7 +192,7 @@ read_fpm_msg (char *buf, size_t buf_len)
     if (reading_full_msg)
       return hdr;
 
-    if (! fpm_msg_ok(hdr, buf_len))
+    if (!fpm_msg_ok(hdr, buf_len))
       {
 	assert(0);
 	err_msg("Malformed fpm message");
